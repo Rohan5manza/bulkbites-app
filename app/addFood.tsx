@@ -23,6 +23,7 @@ import React, {
 	useContext,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react"
 import {
@@ -64,7 +65,7 @@ export default function AddFood() {
 				foodQuantityContainer: {
 					width: 32,
 					height: 32,
-					borderRadius: "50%",
+					borderRadius: 50,
 					backgroundColor: "transparent",
 					alignItems: "center",
 					justifyContent: "center",
@@ -85,13 +86,7 @@ export default function AddFood() {
 					alignItems: "center",
 					paddingLeft: 16,
 					gap: 16,
-					justifyContent: "space-between",
-				},
-				qrButton: {
-					height: 48,
-					width: 48,
-					justifyContent: "center",
-					alignItems: "center",
+					justifyContent: "flex-start",
 				},
 				foodTypeRow: {
 					width: "100%",
@@ -148,15 +143,8 @@ export default function AddFood() {
 		date: today,
 	})
 
-	const handleQrPress = useCallback(() => {
-		router.push({ pathname: "/barcodeScanner" })
-	}, [])
-
-	const [selectedType, setSelectedType] = React.useState<
-		"favorite" | "frequent"
-	>("favorite")
-
-	const scrollViewRef = React.useRef<ScrollView>(null)
+	const [selectedType, setSelectedType] = useState<"favorite" | "frequent">("favorite")
+	const scrollViewRef = useRef<ScrollView>(null)
 
 	useEffect(() => {
 		if (scrollViewRef.current) {
@@ -165,7 +153,7 @@ export default function AddFood() {
 				animated: true,
 			})
 		}
-	}, [selectedType, windowWidth, scrollViewRef])
+	}, [selectedType, windowWidth])
 
 	const handleFoodPress = useCallback(
 		(food: Food) => {
@@ -190,36 +178,39 @@ export default function AddFood() {
 		setModalVisible(false)
 	}, [])
 
-	const handleSubmit = useCallback(async (customEntry: CustomEntry) => {
-		if (!meal) return
-		await addDiaryEntry({
-			food: {
-				id: generateDatabaseId({
-					source: "CUSTOM",
-					id: Crypto.randomUUID(),
-				}),
-				name: customEntry.name,
-				brand: "Custom entry",
-				isCustomEntry: true,
-				servingQuantity: 0,
-				caloriesPer100g: 0,
-				fatPer100g: 0,
-				carbsPer100g: 0,
-				proteinPer100g: 0,
-				isFavorite: false,
-			},
-			quantity: 0,
-			date: today,
-			isServings: false,
-			mealType: meal,
-			overrideCalories: customEntry.calories,
-			overrideFat: customEntry.fat,
-			overrideCarbs: customEntry.carbs,
-			overrideProtein: customEntry.protein,
-		})
-		refetchDiaryEntries()
-		setModalVisible(false)
-	}, [])
+	const handleSubmit = useCallback(
+		async (customEntry: CustomEntry) => {
+			if (!meal) return
+			await addDiaryEntry({
+				food: {
+					id: generateDatabaseId({
+						source: "CUSTOM",
+						id: Crypto.randomUUID(),
+					}),
+					name: customEntry.name,
+					brand: "Custom entry",
+					isCustomEntry: true,
+					servingQuantity: 0,
+					caloriesPer100g: 0,
+					fatPer100g: 0,
+					carbsPer100g: 0,
+					proteinPer100g: 0,
+					isFavorite: false,
+				},
+				quantity: 0,
+				date: today,
+				isServings: false,
+				mealType: meal,
+				overrideCalories: customEntry.calories,
+				overrideFat: customEntry.fat,
+				overrideCarbs: customEntry.carbs,
+				overrideProtein: customEntry.protein,
+			})
+			refetchDiaryEntries()
+			setModalVisible(false)
+		},
+		[addDiaryEntry, meal, refetchDiaryEntries, today]
+	)
 
 	return (
 		<DismissKeyboard>
@@ -232,28 +223,15 @@ export default function AddFood() {
 				<View style={styles.mainContainer}>
 					{meal && (
 						<Header
-							title={capitalizeFirstLetter(
-								getMealTypeLabel(meal) ?? ""
-							)}
+							title={capitalizeFirstLetter(getMealTypeLabel(meal) ?? "")}
 							rightComponent={
-								<View
-									style={styles.headerRightComponentContainer}
-								>
+								<View style={styles.headerRightComponentContainer}>
 									<View style={styles.foodQuantityContainer}>
-										<ThemedText
-											centered
-											style={{
-												fontSize: 15,
-											}}
-										>
-											{mealDiaryEntries?.[meal]?.length ??
-												0}
+										<ThemedText centered style={{ fontSize: 15 }}>
+											{mealDiaryEntries?.[meal]?.length ?? 0}
 										</ThemedText>
 									</View>
-									<TouchableOpacity
-										hitSlop={16}
-										onPress={toggleMenu}
-									>
+									<TouchableOpacity hitSlop={16} onPress={toggleMenu}>
 										<Ionicons
 											name="ellipsis-vertical"
 											size={24}
@@ -265,40 +243,22 @@ export default function AddFood() {
 											transparent
 											animationType="fade"
 											visible={isMenuVisible}
-											onRequestClose={() =>
-												setMenuVisible(false)
-											}
+											onRequestClose={() => setMenuVisible(false)}
 										>
 											<TouchableOpacity
 												style={styles.modalOverlay}
 												activeOpacity={1}
-												onPress={() =>
-													setMenuVisible(false)
-												}
+												onPress={() => setMenuVisible(false)}
 											>
 												<View style={styles.popupMenu}>
-													<CustomPressable
-														onPress={
-															handleCustomEntryPress
-														}
-													>
-														<View
-															style={
-																styles.menuItem
-															}
-														>
+													<CustomPressable onPress={handleCustomEntryPress}>
+														<View style={styles.menuItem}>
 															<Ionicons
 																name="flame-outline"
 																size={24}
-																color={
-																	theme.text
-																}
+																color={theme.text}
 															/>
-															<ThemedText
-																style={{
-																	fontSize: 16,
-																}}
-															>
+															<ThemedText style={{ fontSize: 16 }}>
 																Custom entry
 															</ThemedText>
 														</View>
@@ -311,6 +271,7 @@ export default function AddFood() {
 							}
 						/>
 					)}
+
 					<View style={styles.searchRow}>
 						<TouchableOpacity
 							style={styles.searchBox}
@@ -331,19 +292,9 @@ export default function AddFood() {
 							>
 								What are you looking for?
 							</ThemedText>
-							<TouchableOpacity
-								hitSlop={16}
-								style={styles.qrButton}
-								onPress={handleQrPress}
-							>
-								<Ionicons
-									name="qr-code"
-									size={24}
-									color={theme.background}
-								/>
-							</TouchableOpacity>
 						</TouchableOpacity>
 					</View>
+
 					<View style={styles.foodTypeRow}>
 						<TabSelector
 							tabs={["favorite", "frequent"]}
@@ -351,6 +302,7 @@ export default function AddFood() {
 							selectedTab={selectedType}
 						/>
 					</View>
+
 					<GestureHandlerRootView>
 						<ScrollView
 							ref={scrollViewRef}
@@ -364,59 +316,28 @@ export default function AddFood() {
 						>
 							{["favorite", "frequent"].map((type) => {
 								const foods =
-									type === "favorite"
-										? favoriteFoods
-										: mostUsedFoods
-								const noFoodsText =
-									type === "favorite"
-										? "No favorite foods yet \n Time to add some!"
-										: "No frequent foods yet \n Time to log some!"
-
+									type === "favorite" ? favoriteFoods : mostUsedFoods
 								return (
-									<View
+									<ScrollView
 										key={type}
-										style={styles.scrollViewPage}
+										style={{ width: windowWidth }}
+										contentContainerStyle={{
+											paddingHorizontal: 16,
+											paddingBottom: 24,
+										}}
 									>
-										{foods.length === 0 ? (
-											<ThemedText
-												style={{
-													fontSize: 16,
-													marginTop: 32,
-													textAlign: "center",
-												}}
-											>
-												{noFoodsText}
-											</ThemedText>
-										) : (
-											foods.map((food) => (
-												<GenericListItem
-													key={food.id}
-													title={food.name}
-													subtitle={`${food.brand}, ${food.servingQuantity} g`}
-													onPress={() =>
-														handleFoodPress(food)
-													}
-													rightComponent={
-														<ThemedText>
-															{food.servingQuantity
-																? Math.round(
-																		(food.servingQuantity *
-																			food.caloriesPer100g) /
-																			100
-																	)
-																: food.caloriesPer100g}{" "}
-															Cal
-														</ThemedText>
-													}
-												/>
-											))
-										)}
-									</View>
+										{foods.map((food) => (
+											<GenericListItem
+												key={food.id}
+												title={food.name}
+												onPress={() => handleFoodPress(food)}
+											/>
+										))}
+									</ScrollView>
 								)
 							})}
 						</ScrollView>
 					</GestureHandlerRootView>
-					<BottomButton text="Done" onPress={handleDonePress} />
 				</View>
 			</>
 		</DismissKeyboard>

@@ -11,6 +11,20 @@ import com.facebook.react.defaults.DefaultReactActivityDelegate
 
 import expo.modules.ReactActivityDelegateWrapper
 
+// Required imports
+import ai.onnxruntime.*
+import org.pytorch.*
+import org.pytorch.torchvision.TensorImageUtils
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
+import java.io.*
+
+lateinit var ortEnv: OrtEnvironment
+lateinit var ortSession: OrtSession
+lateinit var pytorchModule: Module
+
+
 class MainActivity : ReactActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     // Set the theme to AppTheme BEFORE onCreate to support
@@ -63,3 +77,5 @@ class MainActivity : ReactActivity() {
       super.invokeDefaultOnBackPressed()
   }
 }
+
+

@@ -96,12 +96,6 @@ export default function RootLayout() {
 											}}
 										/>
 										<Stack.Screen
-											name="barcodeScanner"
-											options={{
-												headerShown: false,
-											}}
-										/>
-										<Stack.Screen
 											name="meal"
 											options={{
 												headerShown: false,
